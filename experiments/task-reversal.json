@@ -1,0 +1,16 @@
+{
+    "session" : ["block learning", "block reversal"],
+
+    "block learning" : {
+        "n_trial" : 50,
+        "cue"     : [ 1, 1, 0, 0 ],
+        "pos"     : [ 1, 1, 0, 0 ],
+        "rwd"     : [ 1.00, 0.0, 0.0, 0.00 ]
+    },
+    "block reversal": {
+        "n_trial" : 100,
+        "cue"     : [ 1, 1, 0, 0 ],
+        "pos"     : [ 1, 1, 0, 0 ],
+        "rwd"     : [ 0.00, 1.0, 0.0, 0.00 ]
+    }
+}
