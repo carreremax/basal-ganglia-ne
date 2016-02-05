@@ -23,10 +23,15 @@ $ pip install matplotlib
 $ pip install tqdm
 ```
 
-To compile the model, just type:
+To compile the model, just type (original instruction) :
 
 ```bash
 $ python setup.py build_ext --inplace
+```
+
+If encountering (like me) problem loading numpy, rather type :
+```bash
+$ python3 setup.py install --user
 ```
 
 Then you can run a single trial:

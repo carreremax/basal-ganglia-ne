@@ -3,8 +3,13 @@
 # Distributed under the (new) BSD License.
 # -----------------------------------------------------------------------------
 import json
-import numpy as np
+import sys
+#sys.path.append("./cdana")
+
+#sys.path.append("../build")
 from cdana import *
+
+import numpy as np
 
 class Model(object):
 
@@ -45,6 +50,9 @@ class Model(object):
                       "mot" : Group(4, activation = clamp) },
             "THL" : { "cog" : Group(4, activation = clamp),
                       "mot" : Group(4, activation = clamp) },
+            "NE" :  { "hip" : Group(1, activation = clamp),
+                      "amy" : Group(1, activation = clamp),
+                      "out"  : Group(1, activation = clamp)},
         }
         for name, structure in self._structures.items():
             for group in structure.values():
@@ -58,13 +66,15 @@ class Model(object):
         STN = self["STN"]
         GPi = self["GPi"]
         THL = self["THL"]
+        NE  = self["NE"]
         self["value"][...] = _["RL"]["init"]
 
         self._groups = (CTX["cog"], CTX["mot"], CTX["ass"], 
                         STR["cog"], STR["mot"], STR["ass"],
                         STN["cog"], STN["mot"],
                         GPi["cog"], GPi["mot"],
-                        THL["cog"], THL["mot"] )
+                        THL["cog"], THL["mot"],
+                        NE["hip"], NE["amy"], NE["out"])
 
         W1 = (2 * np.eye(4) - np.ones((4, 4))).ravel()
         W2 = (2 * np.eye(16) - np.ones((16, 16))).ravel()
@@ -128,7 +138,21 @@ class Model(object):
             "CTX:cog → CTX:ass":
                 CogToAss(CTX["cog"]["V"], CTX["ass"]["Isyn"], weights(4), 0.0),
             "CTX:mot → CTX:ass":
-                MotToAss(CTX["mot"]["V"], CTX["ass"]["Isyn"], weights(4), 0.0)
+                MotToAss(CTX["mot"]["V"], CTX["ass"]["Isyn"], weights(4), 0.0),
+
+            #"CTX:ass → NE:hip":
+            #    AllToAll(CTX["ass"]["V"], NE["hip"]["Isyn"],  (np.ones((16,1))).ravel(),0.0),
+            "NE:hip → NE:out":
+                AllToAll(NE["hip"]["V"], NE["out"]["Isyn"],  np.ones(1),0.0),
+            "NE:hip → NE:amy":
+                AllToAll(NE["hip"]["V"], NE["amy"]["Isyn"], np.ones(1),0.0),
+
+            #"CTX:mot → NE:amy":
+            #    AllToAll(CTX["mot"]["V"], NE["amy"]["Isyn"],  (np.ones((4,1))).ravel(),0.0),
+            "NE:amy → NE:hip":
+                AllToAll(NE["amy"]["V"], NE["hip"]["Isyn"],  np.ones(1),0.0),
+            "NE:amy → NE:out":
+                AllToAll(NE["amy"]["V"], NE["out"]["Isyn"],  np.ones(1),0.0),
         }
         for key, link in self._links.items():
             if key in _["gain"].keys():
@@ -183,7 +207,7 @@ class Model(object):
         self["CTX"]["cog"]["Iext"] = V * trial["cog"] * (1 + np.random.normal(0, noise, 4))
         self["CTX"]["mot"]["Iext"] = V * trial["mot"] * (1 + np.random.normal(0, noise, 4))
         self["CTX"]["ass"]["Iext"] = V * trial["ass"].ravel() * (1 + np.random.normal(0, noise, 16))
-
+        
         # Trial process (max 2500ms)
         decision = False
 
@@ -206,6 +230,13 @@ class Model(object):
             choice = np.argmax(self["CTX"]["mot"]["U"])
             # actual_cue = np.argmax(self["CTX"]["cog"]["U"])
             reward, cue, best = task.process(trial, choice, RT, debug=debug)
+
+            #store activities
+            #debug
+            #print("%f"% (np.mean(self["NE"]["NE"]["U"])))
+            task.records[task.index]["NE_out"]=np.mean(self["NE"]["out"]["U"])
+            task.records[task.index]["NE_amy"]=np.mean(self["NE"]["amy"]["U"])
+            task.records[task.index]["NE_hip"]=np.mean(self["NE"]["hip"]["U"])
             # print("  Motor decision: %d, Chosen cue: %d, Actual cue: %d" % (choice,cue, actual_cue))
                         
             # Constants

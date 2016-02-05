@@ -2,7 +2,7 @@
 # Copyright (c) 2016, Nicolas P. Rougier
 # Distributed under the (new) BSD License.
 # -----------------------------------------------------------------------------
-from setuptools import setup, Extension
+from setuptools import setup, Extension, find_packages
 from Cython.Build import cythonize
 import numpy as np
 
@@ -16,6 +16,6 @@ setup(
     maintainer_email="Nicolas.Rougier@inria.fr",
     install_requires=['numpy', 'cython', 'tqdm'],
     license = "BSD License",
-    packages=['cdana'],
+    packages=find_packages(),
     ext_modules = cythonize(extensions)
 )

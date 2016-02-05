@@ -77,7 +77,10 @@ class Task(object):
                                      ("best",   float, 1),
                                      ("valid",  float, 1),
                                      ("RT",     float, 1),
-                                     ("reward", float, 1)] )
+                                     ("reward", float, 1),
+                                     ("NE_out", float, 1),
+                                     ("NE_amy",float,1),
+                                     ("NE_hip",float,1)])
 
         # We draw all random probabilities at once (faster)
         self.trials["rnd"] = np.random.uniform(0,1,n)
